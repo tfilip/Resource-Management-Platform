@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  db:
+    build:
+      context: db
+    image: filiptepes/rms-db
+    container_name: rms-db
+    restart: always
+  frontend:
+    build:
+      context: frontend
+    image: filiptepes/rms-frontend
+    container_name: "rms-frontend"
+    restart: always
+    ports:
+      - "80:3000"
+    volumes:
+      - ./frontend:/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+  backend:
+    build:
+      context: backend
+    image: filiptepes/rms-backend
+    container_name: "rms-backend"
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+        - ./backend:/app
