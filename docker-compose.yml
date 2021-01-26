@@ -6,6 +6,9 @@ services:
     image: filiptepes/rms-db
     container_name: rms-db
     restart: always
+    ports:
+      - "5432:5432"
+      - "5433:5433"
   backend:
     build:
       context: backend
