@@ -7,10 +7,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER
         },
         password: {
-            type: Sequelize.STRING
-        },
-        display_name: {
-            type: Sequelize.STRING
+            type: Sequelize.INTEGER
         },
         description: {
             type: Sequelize.STRING

@@ -11,22 +11,73 @@ var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
 exports.user_signup = (req, res) => {
-  // Save User to Database
-  User.create({
-    first_name: req.body.first_name,
-    last_name: req.body.last_name,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 8)
-  })
-    .catch(err => {
-      res.status(500).send({ message: err.message });
-    });
+
+  // If users sends request with no organisation pin then it creates
+  // one automatically
+  if (!req.body.organisation_pin) {
+    // Create new user
+    User.create({
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      email: req.body.email,
+      role_id: 1,
+      password: bcrypt.hashSync(req.body.password, 8),
+    })
+      .then(user => {
+        Organisation.create({
+          admin_id: user.id,
+          name: "Newly created organisation",
+          //TODO: Check to be sure it's single
+          password: Math.floor(10000 + Math.random() * 99999)
+        })
+          .then(organisation => {
+            User.update({ organisation_id: organisation.id },
+              { where: { id: user.id } })
+              .then(() => {
+                res.status(201).send({ user, organisation })
+              })
+              .catch(err => {
+                res.status(500).send({ message: err.message });
+              });
+          })
+          .catch(err => {
+            res.status(500).send({ message: err.message });
+          });
+      });
+  } else {
+    Organisation.findOne({
+      where: {
+        password: req.body.organisation_pin
+      }
+    })
+      .then(organisation => {
+        if (!organisation) {
+          res.status(500).send({ message: "Invalid Organisation PIN" });
+        } else {
+          User.create({
+            first_name: req.body.first_name,
+            last_name: req.body.last_name,
+            email: req.body.email,
+            role_id: 2,
+            password: bcrypt.hashSync(req.body.password, 8),
+            organisation_id: organisation.id
+          })
+            .then(user => {
+              res.status(201).send({ user, organisation })
+            })
+        }
+      })
+      .catch(err => {
+        res.status(500).send({ message: err.message });
+      });
+  }
+
 };
 
 exports.user_signin = (req, res) => {
   User.findOne({
     where: {
-      username: req.body.username
+      email: req.body.email
     }
   })
     .then(user => {
@@ -46,23 +97,20 @@ exports.user_signin = (req, res) => {
         });
       }
 
-      var token = jwt.sign({ id: user.id }, config.secret, {
+      var token = jwt.sign({ id: user.id, organisation_id: user.organisation_id }, config.secret, {
         expiresIn: 86400 // 24 hours
       });
 
       var authorities = [];
-      user.getRoles().then(roles => {
-        for (let i = 0; i < roles.length; i++) {
-          authorities.push("ROLE_" + roles[i].name.toUpperCase());
-        }
-        res.status(200).send({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          roles: authorities,
-          accessToken: token
-        });
+      authorities.push("ROLE_" + user.role_id);
+      res.status(200).send({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        roles: authorities,
+        accessToken: token
       });
+
     })
     .catch(err => {
       res.status(500).send({ message: err.message });

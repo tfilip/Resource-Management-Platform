@@ -19,71 +19,72 @@ verifyToken = (req, res, next) => {
       });
     }
     req.userId = decoded.id;
+    req.organisationId = decoded.organisation_id;
     next();
   });
 };
 
 isAdmin = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    user.getRoles().then(roles => {
-      for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === "admin") {
-          next();
-          return;
-        }
-      }
+  User.findOne({
+    where: {
+      id: req.userId
+    }
+  })
+  .then(user => {
+    if (user.role_id == 1) {
+      next();
+      return;
+    } else {
       res.status(403).send({
         message: "Require Admin Role!"
       });
       return;
-    });
-  });
-};
-
-isBasic = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    user.getRoles().then(roles => {
-      for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === "basic") {
-          next();
-          return;
-        }
-      }
-
-      res.status(403).send({
-        message: "Require Moderator Role!"
-      });
-    });
+    }
   });
 };
 
 isBasicOrAdmin = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    user.getRoles().then(roles => {
-      for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === "basic") {
-          next();
-          return;
-        }
-
-        if (roles[i].name === "admin") {
-          next();
-          return;
-        }
-      }
-
+  User.findOne({
+    where: {
+      id: req.userId
+    }
+  })
+  .then(user => {
+    if (user.role_id == 1 || user.role_id == 2) {
+      next();
+      return;
+    } else {
       res.status(403).send({
-        message: "Require Moderator or Admin Role!"
+        message: "Require Admin/Basic Role!"
       });
-    });
+      return;
+    }
   });
 };
+
+isInOrganisation = (req, res, next) => {
+  User.findOne({
+    where: {
+      id: req.userId
+    }
+  }).then(user => {
+    if(user.organisation_id != req.params.organisationId) {
+      res.status(403).send({message: "User is not in the organisation"});
+      return;
+    } else{
+      next();
+    }
+  }).catch(err => {
+    res.status(400).send({message: "User does not exist"});
+    return;
+  })
+}
 
 const authJwt = {
   verifyToken: verifyToken,
   isAdmin: isAdmin,
-  isBasic: isBasic,
-  isBasicOrAdmin: isBasicOrAdmin
+  isBasicOrAdmin: isBasicOrAdmin,
+  isInOrganisation: isInOrganisation
 };
 
 module.exports = authJwt;
