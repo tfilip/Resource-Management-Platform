@@ -1,0 +1,23 @@
+{
+  "name": "resource-management-platform",
+  "version": "1.0.0",
+  "description": "proiect mps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tfilip/Resource-Management-Platform.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tfilip/Resource-Management-Platform/issues"
+  },
+  "homepage": "https://github.com/tfilip/Resource-Management-Platform#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-session": "^1.17.1"
+  }
+}
