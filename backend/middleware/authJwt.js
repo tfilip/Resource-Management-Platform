@@ -50,6 +50,16 @@ isBasicOrAdmin = (req, res, next) => {
     }
   })
   .then(user => {
+    if(!user){
+      res.status(403).send({message: "Not logged in"});
+      return;
+    }
+    if(!user.role_id){
+      res.status(403).send({
+        message: "Require Admin/Basic Role!"
+      });
+      return
+    }
     if (user.role_id == 1 || user.role_id == 2) {
       next();
       return;

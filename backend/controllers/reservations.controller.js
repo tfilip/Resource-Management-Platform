@@ -5,10 +5,18 @@ const Role = db.role;
 const Resource = db.resource;
 const Organisation = db.organisation;
 const Reservation = db.reservation;
-// require('moment')
-// require('moment-js')
+const moment = require('moment');
+const momentRange = require('moment-range');
 
-var periodReserved = function (req) {
+momentRange.extendMoment(moment);
+
+var periodReserved = async function (req) {
+
+
+};
+
+exports.reservation_create = async (req, res) => {
+
 
     var newReservationRange = moment.range(req.body.start_date, req.body.end_date);
 
@@ -18,37 +26,56 @@ var periodReserved = function (req) {
             resource_id: req.params.resourceId
         }
     }).then(reservations => {
-        reservations.forEach(reservation => {
-            var reservationRange = moment.range(reservation.start_date, reservation.end_date);
-            if (newReservationRange.overlaps(reservationRange)) {
-                return true;
-            }
-        })
-    });
-
-    return false;
-};
-
-exports.reservation_create = (req, res) => {
-
-    console.log(periodReserved(req));
-
-    console.log(req.userId);
-    Reservation.create({
-        name: req.body.name,
-        start_date: req.body.start_date,
-        end_date: req.body.end_date,
-        canceled: false,
-        description: req.body.description,
-        resource_id: req.params.resourceId,
-        user_id: req.userId
-    })
-    .then(reservation => {
-        res.status(201).send({ reservation })
-    })
-    .catch(err => {
+        if(reservations.length > 0){
+            reservations.forEach(reservation => {
+                ok = true
+                var reservationRange = moment.range(reservation.start_date, reservation.end_date);
+                if (newReservationRange.overlaps(reservationRange)) {
+                    ok = false;
+                }
+                if(ok){
+                    Reservation.create({
+                        name: req.body.name,
+                        start_date: req.body.start_date,
+                        end_date: req.body.end_date,
+                        canceled: false,
+                        description: req.body.description,
+                        resource_id: req.params.resourceId,
+                        user_id: req.userId
+                    })
+                    .then(reservation => {
+                        res.status(201).send({ reservation })
+                    })
+                    .catch(err => {
+                        res.status(500).send({ message: err.message });
+                    });
+                } else {
+                    res.status(500).send({ message: "Period reserved" });
+                }
+            })
+        } else{
+            Reservation.create({
+                name: req.body.name,
+                start_date: req.body.start_date,
+                end_date: req.body.end_date,
+                canceled: false,
+                description: req.body.description,
+                resource_id: req.params.resourceId,
+                user_id: req.userId
+            })
+            .then(reservation => {
+                res.status(201).send({ reservation })
+            })
+            .catch(err => {
+                res.status(500).send({ message: err.message });
+            });
+        }
+    }).catch(err => {
         res.status(500).send({ message: err.message });
+        return true;
     });
+
+
 };
 
 exports.reservation_cancel = (req, res) => {
@@ -69,21 +96,64 @@ exports.reservation_cancel = (req, res) => {
 
 exports.reservation_update = (req, res) => {
 
-    Reservation.findOne({
+    var newReservationRange = moment.range(req.body.start_date, req.body.end_date);
+
+    Reservation.findAll({
         where: {
-            id: req.params.reservationId
+            canceled: false,
+            resource_id: req.params.resourceId
         }
-    })
-    .then(async (reservation) => {
-        reservation.start_date = req.body.start_date;
-        reservation.end_date = req.body.end_date;
-        reservation.description = req.body.description;
-        await reservation.save();
-        res.status(201).send({ reservation })
-    })
-    .catch(err => {
-        res.status(500).send({ message: err.message });
-    });
+    }).then(reservations => {
+        if(reservations.length > 0){
+            if(reservations.length > 0){
+                reservations.forEach(reservation => {
+                    ok = true
+                    var reservationRange = moment.range(reservation.start_date, reservation.end_date);
+                    if (newReservationRange.overlaps(reservationRange)) {
+                        ok = false;
+                    }
+                    if(ok){
+                        Reservation.findOne({
+                            where: {
+                                id: req.params.reservationId
+                            }
+                        })
+                        .then(async (reservation) => {
+                            reservation.start_date = req.body.start_date;
+                            reservation.end_date = req.body.end_date;
+                            reservation.description = req.body.description;
+                            await reservation.save();
+                            res.status(201).send({ reservation })
+                        })
+                        .catch(err => {
+                            res.status(500).send({ message: err.message });
+                        });
+                    }else {
+                        res.status(500).send({ message: "Period reserved" });
+                    }
+                })
+            } else{
+                Reservation.findOne({
+                    where: {
+                        id: req.params.reservationId
+                    }
+                })
+                .then(async (reservation) => {
+                    reservation.start_date = req.body.start_date;
+                    reservation.end_date = req.body.end_date;
+                    reservation.description = req.body.description;
+                    await reservation.save();
+                    res.status(201).send({ reservation })
+                })
+                .catch(err => {
+                    res.status(500).send({ message: err.message });
+                });
+            }
+        }})
+        .catch(err => {
+            res.status(500).send({ message: err.message });
+        });
+
 };
 
 exports.reservation_get_all = (req, res) => {

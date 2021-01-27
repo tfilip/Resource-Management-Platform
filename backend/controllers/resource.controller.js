@@ -1,5 +1,6 @@
 const db = require("../models");
 const config = require("../config/auth.config");
+const { organisation } = require("../models");
 const User = db.user;
 const Role = db.role;
 const Resource = db.resource;
@@ -14,7 +15,8 @@ exports.resource_create = (req, res) => {
     }
     Resource.create({
         name: req.body.name,
-        description: req.body.description
+        description: req.body.description,
+        organisation_id: req.params.organisationId
     })
     .then(resource => {
         res.status(201).send({ resource })

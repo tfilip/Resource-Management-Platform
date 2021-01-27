@@ -31,10 +31,22 @@ exports.user_signup = (req, res) => {
           password: Math.floor(10000 + Math.random() * 99999)
         })
           .then(organisation => {
+            console.log(organisation.id);
+            console.log(user.id);
             User.update({ organisation_id: organisation.id },
-              { where: { id: user.id } })
+              {
+                returning: true,
+                where: { id: user.id }
+              })
               .then(() => {
-                res.status(201).send({ user, organisation })
+                User.findOne({
+                  id: user.id
+                }).then((user) => {
+                  res.status(201).send({ user, organisation })
+                }
+                ).catch(err => {
+                  res.status(500).send({ message: err.message });
+                })
               })
               .catch(err => {
                 res.status(500).send({ message: err.message });
@@ -62,9 +74,9 @@ exports.user_signup = (req, res) => {
             password: bcrypt.hashSync(req.body.password, 8),
             organisation_id: organisation.id
           })
-          .then(user => {
-            res.status(201).send({ user, organisation })
-          })
+            .then(user => {
+              res.status(201).send({ user, organisation })
+            })
         }
       })
       .catch(err => {
