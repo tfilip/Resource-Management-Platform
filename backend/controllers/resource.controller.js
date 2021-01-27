@@ -61,7 +61,7 @@ exports.resource_delete = (req, res) => {
         })
         .then(async () => {
             await resource.destroy();
-            res.status(201).send({ message: "Deleted" });
+            res.status(200).send({ message: "Deleted" });
         })
         .catch(err => {
             res.status(500).send({ message: err.message });
@@ -80,7 +80,7 @@ exports.resource_get_one = (req, res) => {
     })
     .then(resource => {
         if(resource){
-            res.status(201).send({ resource });
+            res.status(200).send({ resource });
         } else{
             res.status(404).send({ message: "Resource not found" });
         }

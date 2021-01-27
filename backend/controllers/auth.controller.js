@@ -52,7 +52,7 @@ exports.user_signup = (req, res) => {
     })
       .then(organisation => {
         if (!organisation) {
-          res.status(500).send({ message: "Invalid Organisation PIN" });
+          res.status(400).send({ message: "Invalid Organisation PIN" });
         } else {
           User.create({
             first_name: req.body.first_name,
@@ -62,9 +62,9 @@ exports.user_signup = (req, res) => {
             password: bcrypt.hashSync(req.body.password, 8),
             organisation_id: organisation.id
           })
-            .then(user => {
-              res.status(201).send({ user, organisation })
-            })
+          .then(user => {
+            res.status(201).send({ user, organisation })
+          })
         }
       })
       .catch(err => {
