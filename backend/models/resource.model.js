@@ -6,10 +6,10 @@ module.exports = (sequelize, Sequelize) => {
         description: {
             type: Sequelize.STRING
         },
-        resource_id: {
+        organisation_id: {
             type: Sequelize.INTEGER,
             references: {
-                model: 'resources',
+                model: 'organisations',
                 key: 'id'
             }
         }
