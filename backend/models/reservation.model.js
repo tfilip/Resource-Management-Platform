@@ -1,9 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
     const Reservation = sequelize.define("reservations", {
-        id: {
-            type: Sequelize.INTEGER,
-            primaryKey: true
-        },
         start_date: {
             type: Sequelize.DATE
         },
@@ -11,10 +7,25 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DATE
         },
         canceled: {
-            type: Sequelize.BOOLEAN
+            type: Sequelize.BOOLEAN,
+            default: false
         },
         description: {
             type: Sequelize.STRING
+        },
+        user_id: {
+            type: Sequelize.INTEGER,
+            references: {
+                model: 'users',
+                key: 'id'
+            }
+        },
+        resource_id: {
+            type: Sequelize.INTEGER,
+            references: {
+                model: 'resources',
+                key: 'id'
+            }
         }
     });
     return Reservation;

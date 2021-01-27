@@ -58,6 +58,8 @@ function initial() {
 
 require('./routes/auth.routes')(app);
 require('./routes/resource.routes')(app);
+require('./routes/reservation.routes')(app);
+
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3000;

@@ -1,5 +1,5 @@
 const { verifySignUp, authJwt } = require("../middleware");
-const controller = require("../controllers/resource.controller");
+const controller = require("../controllers/reservations.controller");
 
 module.exports = function (app) {
     app.use(function (req, res, next) {
@@ -11,53 +11,53 @@ module.exports = function (app) {
     });
 
     app.get(
-        "/api/organisation/:organisationId/resource/",
+        "/api/organisation/:organisationId/resource/:resourceId/reservation",
         [
             authJwt.verifyToken,
             authJwt.isBasicOrAdmin,
             authJwt.isInOrganisation
         ],
-        controller.resource_get_all
+        controller.reservation_get_all
     );
 
     app.get(
-        "/api/organisation/:organisationId/resource/:resourceId",
+        "/api/organisation/:organisationId/resource/:resourceId/reservation/:reservationId",
         [
             authJwt.verifyToken,
             authJwt.isBasicOrAdmin,
             authJwt.isInOrganisation
         ],
-        controller.resource_get_one
+        controller.reservation_get_one
     );
 
     app.post(
-        "/api/organisation/:organisationId/resource",
+        "/api/organisation/:organisationId/resource/:resourceId/reservation",
         [
             authJwt.verifyToken,
-            authJwt.isAdmin,
+            authJwt.isBasicOrAdmin,
             authJwt.isInOrganisation
         ],
-        controller.resource_create
-    );
-
-    app.put(
-        "/api/organisation/:organisationId/resource/:resourceId",
-        [
-            authJwt.verifyToken,
-            authJwt.isAdmin,
-            authJwt.isInOrganisation
-        ],
-        controller.resource_update
+        controller.reservation_create
     );
 
     app.delete(
-        "/api/organisation/:organisationId/resource/:resourceId",
+        "/api/organisation/:organisationId/resource/:resourceId/reservation/:reservationId",
+        [
+            authJwt.verifyToken,
+            authJwt.isBasicOrAdmin,
+            authJwt.isInOrganisation
+        ],
+        controller.reservation_cancel
+    );
+
+    app.put(
+        "/api/organisation/:organisationId/resource/:resourceId/reservation/:reservationId",
         [
             authJwt.verifyToken,
             authJwt.isAdmin,
             authJwt.isInOrganisation
         ],
-        controller.resource_delete
+        controller.reservation_update
     );
 
 };

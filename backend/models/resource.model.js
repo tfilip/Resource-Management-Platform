@@ -5,6 +5,13 @@ module.exports = (sequelize, Sequelize) => {
         },
         description: {
             type: Sequelize.STRING
+        },
+        resource_id: {
+            type: Sequelize.INTEGER,
+            references: {
+                model: 'resources',
+                key: 'id'
+            }
         }
     });
     return Resource;
